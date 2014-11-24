@@ -1,0 +1,2 @@
+defmodule PhoenixChat do
+end
