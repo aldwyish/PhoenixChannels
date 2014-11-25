@@ -1,8 +1,9 @@
 defmodule Spectator do
-  alias Phoenix.WebsocketClient
+  alias Phoenix.Socket
+
   def start(endpoint) do
-    {:ok, client} = Phoenix.WebsocketClient.start_link(self,endpoint)
-    WebsocketClient.join(client, "rooms", "lobby", %{username: "elixir"})
+    {:ok, client} = Socket.start_link(self,endpoint)
+    Socket.join(client, "rooms", "lobby", %{username: "elixir"})
     listen
   end
 

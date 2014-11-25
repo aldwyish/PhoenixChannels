@@ -1,4 +1,4 @@
-defmodule Phoenix.WebsocketClient do
+defmodule Phoenix.Socket do
   alias Poison, as: JSON
 
   @doc """
