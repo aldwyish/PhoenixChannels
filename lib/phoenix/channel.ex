@@ -1,16 +1,23 @@
 defmodule Phoenix.Channel do
   alias Phoenix.Socket
 
-  defmacro __using__(options)  do
+  defmacro __using__(opts)  do
+    IO.inspect opts
     quote do
+      @channel unquote(opts[:channel])
+      @topic   unquote(opts[:topic])
+
+      def topic, do: @topic
+      def channel, do: @channel
+
       import Phoenix.Channel
       # import Phoenix.Socket [only: send]
     end
   end
+  # defmacro event(name,callback) do
+  #   def event(unquote(name)) do
+  #     callback()
+  #   end
+  # end
 
-  def connect(url, channel, topic) do
-    IO.puts "connecting... #{endpoint}"
-    {:ok, socket} = Socket.start_link(pid,endpoint)
-    %{socket: socket, channel: channel, topic: topic}
-  end
 end

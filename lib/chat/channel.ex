@@ -1,19 +1,16 @@
 defmodule ChatChannel do
-  use Phoenix.Channel
+  use Phoenix.Channel, channel: "rooms", topic: "lobby"
 
-  #join "ws://localhost:4000/ws"
+  def event("user:entered", msg) do
+    Spectator.new_user(msg)
+   end
 
+  def event("new:msg", msg) do
+    Spectator.new_message(msg)
+  end
 
-  # event "new:user" do
-  #  Chat.add_user
-  # end
-  #
-  # event "new:msg", do:
-  # Chat.add_msg
-  # end
-
-  # def event(name,callback) do
-  #
-  # end
+  def event(event, msg) do
+    IO.inspect msg
+  end
 
 end

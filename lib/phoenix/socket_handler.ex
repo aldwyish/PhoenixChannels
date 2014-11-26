@@ -3,34 +3,52 @@ defmodule Phoenix.Socket do
 
   @doc """
   Starts the WebSocket server for given ws URL. Received Socket.Message's
-  are forwarded to the sender pid
+  are forwarded to the channels pid
   """
-  def start_link(sender, url) do
+  def start_link(url) do
     :crypto.start
     :ssl.start
-    :websocket_client.start_link(String.to_char_list(url), __MODULE__, [sender])
+    :websocket_client.start_link(String.to_char_list(url), __MODULE__, %{})
   end
 
-  def init([sender], _conn_state) do
-    {:ok, sender}
+  def init(%{}, _conn_state) do
+    {:ok, %{}}
+  end
+
+  def register(socket, channel, module) do
+    send socket,{:channel, channel, module}
+  end
+
+  def on_message(%{channel: channel, event: event, message: msg}, channels) do
+    trigger(channels[channel], event, msg)
+  end
+
+  def trigger(channel, event, msg) do
+    apply(channel,:event,[event,msg])
   end
 
   @doc """
   Receives JSON encoded Socket.Message from remote WS endpoint and
-  forwards message to client sender process
+  forwards message to client channels process
   """
-  def websocket_handle({:text, msg}, _conn_state, sender) do
+  def websocket_handle({:text, msg}, _conn_state, channels) do
     IO.puts "handle"
-    send sender, Phoenix.Socket.Message.parse!(msg)
-    {:ok, sender}
+    msg = Phoenix.Socket.Message.parse!(msg)
+    on_message(msg,channels)
+    {:ok, channels}
   end
+
 
   @doc """
   Sends JSON encoded Socket.Message to remote WS endpoint
   """
-  def websocket_info({:send, msg}, _conn_state, sender) do
+  def websocket_info({:send, msg}, _conn_state, channels) do
     IO.puts "info"
-    {:reply, {:text, msg}, sender}
+    {:reply, {:text, msg}, channels}
+  end
+
+  def websocket_info({:channel, channel, module}, _conn_state, channels) do
+    {:ok, Dict.put(channels, channel, module)}
   end
 
   def websocket_terminate(_reason, _conn_state, _state) do
